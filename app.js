@@ -35,14 +35,12 @@ const urlmongo = "mongodb://localhost:27017/userDB";
 mongoose.connect(urlmongo);
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
-  email: String,
+  username: String,
   password: String,
-  provider: String,
-  //   googleId: String,
+  googleId: String,
 });
 
-userSchema.plugin(passportLocalMongoose, { usernameField: "username" });
+userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
@@ -67,10 +65,9 @@ passport.use(
       callbackURL: "http://localhost:3000/auth/google/secrets",
     },
     function (accessToken, refreshToken, profile, cb) {
-      console.log(profile);
+      //   console.log(profile);
       User.findOrCreate(
-        { username: profile.id },
-        { provider: "google", email: profile._json.email },
+        { googleId: profile.id, username: profile._json.email },
         function (err, user) {
           return cb(err, user);
         }
@@ -111,11 +108,9 @@ app
     res.render("register");
   })
   .post(function (req, res) {
-    const username = req.body.username;
-    const password = req.body.password;
     User.register(
-      { username: username, email: username, provider: "local" },
-      password,
+      { username: req.body.username },
+      req.body.password,
       function (err, user) {
         if (err) {
           console.log(err);
