@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
   username: String,
   password: String,
   googleId: String,
-  secret: String,
+  secret: Array,
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -117,16 +117,12 @@ app
     }
   })
   .post(function (req, res) {
-    const submittedSecret = req.body.secret;
-
-    console.log(req.user.id);
-
     User.findById(req.user.id, function (err, foundUser) {
       if (err) {
         console.log(err);
       } else {
         if (foundUser) {
-          foundUser.secret = submittedSecret;
+          foundUser.secret.push(req.body.secret);
           foundUser.save(function () {
             res.redirect("/secrets");
           });
